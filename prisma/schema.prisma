@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  category    String
+  subCategory String
+  bestseller  Boolean
+  sizes       Json
+  image       String[]
+  date        DateTime @default(now())  // Cambiar a DateTime
+}
+
+
+
+model User {
+  id        Int    @id @default(autoincrement()) // Agregar un ID autoincrementable
+  name      String
+  email     String @unique
+  password  String
+  cartData  Json   @default("{}") // Prisma tiene un tipo `Json` para datos JSON
+  createdAt DateTime @default(now()) // Para manejar la fecha de creación (opcional)
+  updatedAt DateTime @updatedAt // Para actualizar la fecha automáticamente (opcional)
+}
+
+model Order {
+  id           Int      @id @default(autoincrement()) // ID autoincrementable
+  userId       String   // userId como String
+  items        Json     // Usamos el tipo `Json` para almacenar un array de elementos
+  amount       Float    // amount se cambia a `Float` para representar valores numéricos con decimales
+  address      Json     // Usamos `Json` para almacenar un objeto JSON
+  status       String   @default("Order Placed") // Valor por defecto
+  paymentMethod String  // Método de pago
+  payment      Boolean  @default(false) // Valor por defecto
+  date         Int      // Utilizamos `Int` para la fecha, puede ser un timestamp en milisegundos
+  createdAt    DateTime @default(now()) // Fecha de creación (opcional)
+  updatedAt    DateTime @updatedAt // Fecha de última actualización (opcional)
+}
