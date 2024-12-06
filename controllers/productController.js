@@ -64,8 +64,16 @@ export const listProducts = async (req, res) => {
 // Función para eliminar un producto
 export const removeProduct = async (req, res) => {
     try {
-        const { id } = req.body;
-        const product = await prisma.product.delete({ where: { id: Number(id) } });
+        // Asegúrate de obtener el id correctamente desde el body o params
+        const { id } = req.body;  // O usa req.params.id si el id se pasa en la URL
+
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Product ID is required" });
+        }
+
+        const product = await prisma.product.delete({
+            where: { id: Number(id) }
+        });
 
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found" });
