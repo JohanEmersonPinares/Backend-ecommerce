@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
-import prisma from '../config/db';
-import upload from '../middleware/multer';
+import prisma from '../config/db.js';
+import upload from '../middleware/multer.js';
 
 // Función para agregar un producto
 export const addProduct = async (req, res) => {

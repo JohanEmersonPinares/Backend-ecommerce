@@ -4,8 +4,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch ./src/index.js"
-
+    "dev": "tsx watch ./src/index.js",
+    "start": "node ./src/index.js"
   },
   "author": "",
   "license": "ISC",
