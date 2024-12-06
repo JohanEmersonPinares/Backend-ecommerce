@@ -14,8 +14,10 @@ const createToken = (id) => {
     if (!process.env.JWT_SECRET) {
         throw new Error('JWT_SECRET is not defined');
     }
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-}
+    // Cambiar el tiempo de expiración a 7 días
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
+
 
 // Controlador para iniciar sesión
 const loginUser = async (req, res) => {
@@ -52,44 +54,49 @@ const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        // Verificar si ya existe
+        // Verificar si los campos están presentes
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+
+        // Verificar si el email es válido
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({ success: false, message: "Please enter a valid email" });
+        }
+
+        // Verificar si la contraseña es suficientemente fuerte
+        if (password.length < 8) {
+            return res.status(400).json({ success: false, message: "Password must be at least 8 characters long" });
+        }
+
+        // Verificar si el usuario ya existe
         const exists = await prisma.user.findUnique({
             where: { email },
         });
 
         if (exists) {
-            res.status(400).json({ success: false, message: "User already exists" });
-            return;
+            return res.status(400).json({ success: false, message: "User already exists" });
         }
 
-        // Validaciones
-        if (!validator.isEmail(email)) {
-            res.status(400).json({ success: false, message: "Please enter a valid email" });
-            return;
-        }
-
-        if (password.length < 8) {
-            res.status(400).json({ success: false, message: "Please enter a strong password" });
-            return;
-        }
-
-        // Hash de la contraseña
+        // Generar hash de la contraseña
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Crear usuario
+        // Crear nuevo usuario
         const newUser = await prisma.user.create({
             data: { name, email, password: hashedPassword },
         });
 
+        // Crear token
         const token = createToken(newUser.id);
 
-        res.status(201).json({ success: true, token });
+        return res.status(201).json({ success: true, token, user: { name: newUser.name, email: newUser.email } });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        console.error("Error in registerUser:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
 
 // Controlador para login de administrador
 const adminLogin = async (req, res) => {
